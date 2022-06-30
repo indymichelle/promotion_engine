@@ -62,6 +62,8 @@ class PromotionEngine
   end
 
   def test_scenarios
-    puts calculate_price(['A','A','A','A','A'])
+    puts calculate_price(['A','B','C'])
+    puts calculate_price(['A','A','A','A','A','B','B','B','B','B','C'])
+    puts calculate_price(['A','A','A','B','B','B','B','B','C','D'])
   end
 end
