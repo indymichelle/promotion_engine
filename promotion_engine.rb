@@ -1,69 +1,41 @@
 class PromotionEngine
-  def calculate_price(sku_array)
-    @price = 0
-    apply_promotions(sku_array)
+  attr_reader :prices, :promotions
+
+  def initialize(prices, promotions)
+    @prices = prices
+    @promotions =  promotions
+  end
+
+  def calculate_price(items)
+    @total = 0
+    apply_promotions(items)
     calculate_single_item_prices
-    @price
+    @total
   end
 
-  def apply_promotions(sku_array)
-    promotion_1(sku_array)
-    promotion_2(sku_array)
-    promotion_3(sku_array)
-  end
+  def apply_promotions(items)
+    @remaining_items = items
 
-  def promotion_1(sku_array)
-    @a_array_count = sku_array.select { |element| element if element == 'A' }.count
-
-    return if @a_array_count.zero?
-
-    while @a_array_count >= 3
-      @price += 130
-      @a_array_count -= 3
+    @promotions.each do |sku_hash, price|
+      loop do
+        apply_promotion = sku_hash.all? do |sku, count|
+          (@remaining_items[sku] || 0) >= count
+        end
+        if apply_promotion
+          @total += price
+          sku_hash.each do |sku, count|
+            @remaining_items[sku] -= count
+          end
+        else
+          break
+        end
+      end
     end
-    puts @price
-  end
-
-  def promotion_2(sku_array)
-    @b_array_count = sku_array.select { |element| element if element == 'B' }.count
-
-    return if @b_array_count.zero?
-
-    while @b_array_count >= 2
-      @price += 45
-      @b_array_count -= 2
-    end
-
-    puts @price
-  end
-
-  def promotion_3(sku_array)
-    @c_array_count = sku_array.select { |element| element if element == 'C' }.count
-    @d_array_count = sku_array.select { |element| element if element == 'D' }.count
-
-    return if @c_array_count.zero? || @d_array_count.zero?
-
-    while @c_array_count >= 1
-      break if @d_array_count == 0
-
-      @price += 30
-      @c_array_count -= 1
-      @d_array_count -= 1
-    end
-
-    puts @price
   end
 
   def calculate_single_item_prices
-    @price += @a_array_count * 50
-    @price += @b_array_count * 30
-    @price += @c_array_count * 20
-    @price += @d_array_count * 15
-  end
-
-  def test_scenarios
-    puts calculate_price(['A','B','C'])
-    puts calculate_price(['A','A','A','A','A','B','B','B','B','B','C'])
-    puts calculate_price(['A','A','A','B','B','B','B','B','C','D'])
+    @prices.each do |sku, cost|
+      @total += (@remaining_items[sku] || 0) * cost
+    end
   end
 end
